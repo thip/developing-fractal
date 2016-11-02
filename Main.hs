@@ -4,25 +4,28 @@ import Graphics.Gloss
 
 data Rule = Rule Char String deriving (Show)
 data Axiom = Axiom String deriving (Show)
-data LSystem = LSystem Axiom [Rule] deriving (Show)
+data Angle = Angle Float deriving (Show)
+data LSystem = LSystem Angle Axiom [Rule] deriving (Show)
 
-dragon = LSystem (Axiom "f") [Rule 'f' "f-h", Rule 'h' "f+h"]
 segLength = 2
+iterations = 16
+
+dragon = LSystem (Angle (pi/2)) (Axiom "f") [Rule 'f' "f-h", Rule 'h' "f+h"]
+terDragon = LSystem (Angle (2*pi/3)) (Axiom "f") [Rule 'f' "f+f-f"]
 
 main :: IO()
-main = display (InWindow "fractal" (200, 200) (10, 10)) (white) (line ([(0,0)] ++ (makePath (Main.iterate 15 dragon) (0,0) 0 )))
+main = display (InWindow "fractal" (200, 200) (10, 10)) (white) (drawFractal dragon iterations)
 
+drawFractal :: LSystem->Int->Picture
+drawFractal (LSystem (Angle theta) (Axiom a) rules) n = line ([(0,0)] ++ makePath (iterate' n a rules) theta (0,0) 0)
 
-makePath :: String->Vector->Float->Path
-makePath [] curPos theta = []
-makePath (c:cs) curPos theta
-        | c == '+' = makePath cs curPos (theta + (pi/2))
-        | c == '-' = makePath cs curPos (theta - (pi/2))
-        | otherwise = [curPos + (segLength * (sin theta), segLength * (cos theta))] ++ (makePath cs (curPos + (segLength * (sin theta), segLength * (cos theta))) theta)
-    
-
-iterate :: Int->LSystem->String
-iterate n (LSystem (Axiom a) rules) = iterate' n a rules
+makePath :: String->Float->Vector->Float->Path
+makePath [] theta curPos initialTheta = []
+makePath (c:cs) theta curPos initialTheta
+        | c == '+' = makePath cs theta curPos (initialTheta + theta)
+        | c == '-' = makePath cs theta curPos (initialTheta - theta)
+        | otherwise = [newPos] ++ (makePath cs theta newPos initialTheta)
+                where newPos =  curPos + (segLength * (sin initialTheta), segLength * (cos initialTheta))
 
 iterate' :: Int->String->[Rule]->String
 iterate' 0 string rules = string
