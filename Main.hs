@@ -1,20 +1,26 @@
 module Main(main) where
 
 import Graphics.Gloss
+import Bezier
 
 data Rule = Rule Char String deriving (Show)
 data Axiom = Axiom String deriving (Show)
 data Angle = Angle Float deriving (Show)
 data LSystem = LSystem Angle Axiom [Rule] deriving (Show)
 
-segLength = 2
-iterations = 10
+segLength = 10
+iterations = 6
 
 dragon = LSystem (Angle (pi/2)) (Axiom "f") [Rule 'f' "f-h", Rule 'h' "f+h"]
 terDragon = LSystem (Angle (2*pi/3)) (Axiom "f") [Rule 'f' "f+f-f"]
 
 main :: IO()
-main = display (InWindow "fractal" (200, 200) (10, 10)) (white) (drawFractal dragon iterations)
+main = display (InWindow "fractal" (300, 300) (100, 100)) (white) (drawSmoothFractal terDragon iterations)
+
+
+drawSmoothFractal :: LSystem->Int->Picture
+drawSmoothFractal (LSystem (Angle theta) (Axiom a) rules) n = line $ smooth ([(0,0)] ++ makePath (iterate' n a rules) theta (0,0) 0) 16
+
 
 drawFractal :: LSystem->Int->Picture
 drawFractal (LSystem (Angle theta) (Axiom a) rules) n = line ([(0,0)] ++ makePath (iterate' n a rules) theta (0,0) 0)
