@@ -8,7 +8,7 @@ data Angle = Angle Float deriving (Show)
 data LSystem = LSystem Angle Axiom [Rule] deriving (Show)
 
 segLength = 2
-iterations = 16
+iterations = 10
 
 dragon = LSystem (Angle (pi/2)) (Axiom "f") [Rule 'f' "f-h", Rule 'h' "f+h"]
 terDragon = LSystem (Angle (2*pi/3)) (Axiom "f") [Rule 'f' "f+f-f"]
