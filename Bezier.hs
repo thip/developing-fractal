@@ -6,9 +6,27 @@ import Data.List
 
 type Section = (Point, Point, Point)
 
-smooth :: [Point] -> Int -> [Point]
-smooth (a:b:c:[]) n = interpolateSection ((half a b), (half b c), b) n
-smooth (a:b:c:ps) n = (smooth ([a]++[b]++[c]) n)  ++ (smooth ([b] ++ [c] ++ ps) n) 
+smooth :: Int -> [Point] -> [Point]
+smooth n (a:b:[]) = [a] ++ [b]
+smooth n (a:b:c:[]) = interpolateSection (a, c, b) n
+smooth n (a:b:c:d:[]) = (interpolateSection (a, (half b c), b) n ) ++ (interpolateSection ((half b c), d, c) n )
+smooth n (a:b:c:ps) = (smoothEnd n a b c) ++  (smoothMiddle n middle) ++ (smoothOtherEnd n end)
+    where middle = [b] ++ [c] ++ reverse (  drop 1 ( reverse ps))
+          end  = reverse ( take 3 ( reverse ps))
+
+smoothEnd :: Int -> Point -> Point -> Point -> [Point]
+smoothEnd n a b c = interpolateSection (a, (half b c), b) n
+
+smoothOtherEnd :: Int -> [Point] -> [Point]
+smoothOtherEnd n (a:b:c:[]) = interpolateSection ((half a b), c, b) n
+smoothOtherEnd n ps = ps
+
+smoothMiddle :: Int -> [Point] -> [Point]
+smoothMiddle n [] = []
+smoothMiddle n (a:[]) = [a]
+smoothMiddle n (a:b:[]) = [a] ++ [b]
+smoothMiddle n (a:b:c:[]) = interpolateSection ((half a b), (half b c), b) n
+smoothMiddle n (a:b:c:ps) = (smoothMiddle n ([a]++[b]++[c]))  ++ (smoothMiddle n ([b] ++ [c] ++ ps)) 
 
 half :: Point -> Point -> Point
 half a b = a + (mulSV 0.5 (b-a)) 

@@ -9,17 +9,39 @@ data Angle = Angle Float deriving (Show)
 data LSystem = LSystem Angle Axiom [Rule] deriving (Show)
 
 segLength = 10
-iterations = 6
+iterations = 2
+sf = tan (pi/3)
 
 dragon = LSystem (Angle (pi/2)) (Axiom "f") [Rule 'f' "f-h", Rule 'h' "f+h"]
 terDragon = LSystem (Angle (2*pi/3)) (Axiom "f") [Rule 'f' "f+f-f"]
 
 main :: IO()
-main = display (InWindow "fractal" (300, 300) (100, 100)) (white) (drawSmoothFractal terDragon iterations)
+main = display (InWindow "fractal" (300, 300) (100, 100)) (white) ( Pictures (scaleAndRotateLayers (drawIterations 0 8 terDragon) ))
 
+
+scaleAndRotateLayers :: [Picture] -> [Picture]
+scaleAndRotateLayers layers = scaleAndRotateLayers' (reverse layers)  0 
+
+scaleAndRotateLayers' :: [Picture]->Int->[Picture]
+scaleAndRotateLayers' [] layerNumber = []
+scaleAndRotateLayers' (layer:layers) layerNumber = [(scaleAndRotate (sf**n) (n*pi/6) layer)] ++ (scaleAndRotateLayers' layers (layerNumber+1))
+    where n = fromIntegral layerNumber  
+
+scaleAndRotate :: Float->Float->Picture->Picture
+scaleAndRotate scaleFac angle picture = scale scaleFac scaleFac (rotate' angle picture)
+
+drawIterations :: Int->Int->LSystem->[Picture]
+drawIterations start stop  system = map (drawSmoothFractal system) [start..stop] 
+
+rotate' :: Float->Picture->Picture
+rotate' angle picture = rotate (angle * (180/pi)) picture
+
+-- drawLayers :: LSystem->Int->Int->[Picture]
+-- drawLayers system start 0 = [drawSmoothFractal system start]
+-- drawLayers system start upTo = [scale (fromIntegral upTo*sf) (fromIntegral upTo*sf) (rotate (fromIntegral $ 30*upTo) (drawSmoothFractal system start))] ++ ( drawLayers system (start+1) ( upTo-1) )
 
 drawSmoothFractal :: LSystem->Int->Picture
-drawSmoothFractal (LSystem (Angle theta) (Axiom a) rules) n = line $ smooth ([(0,0)] ++ makePath (iterate' n a rules) theta (0,0) 0) 16
+drawSmoothFractal (LSystem (Angle theta) (Axiom a) rules) n = line $ smooth 8 ([(0,0)] ++ makePath (iterate' n a rules) theta (0,0) 0) 
 
 
 drawFractal :: LSystem->Int->Picture
