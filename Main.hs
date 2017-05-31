@@ -16,7 +16,7 @@ dragon = LSystem (Angle (pi/2)) (Axiom "f") [Rule 'f' "f-h", Rule 'h' "f+h"]
 terDragon = LSystem (Angle (2*pi/3)) (Axiom "f") [Rule 'f' "f+f-f"]
 
 main :: IO()
-main = display (InWindow "fractal" (300, 300) (100, 100)) (white) ( Pictures (scaleAndRotateLayers (drawIterations 0 8 terDragon) ))
+main = display (InWindow "fractal" (300, 300) (100, 100)) (white) (Pictures (scaleAndRotateLayers (drawIterations 0 8 terDragon)))
 
 
 scaleAndRotateLayers :: [Picture] -> [Picture]
@@ -36,12 +36,8 @@ drawIterations start stop  system = map (drawSmoothFractal system) [start..stop]
 rotate' :: Float->Picture->Picture
 rotate' angle picture = rotate (angle * (180/pi)) picture
 
--- drawLayers :: LSystem->Int->Int->[Picture]
--- drawLayers system start 0 = [drawSmoothFractal system start]
--- drawLayers system start upTo = [scale (fromIntegral upTo*sf) (fromIntegral upTo*sf) (rotate (fromIntegral $ 30*upTo) (drawSmoothFractal system start))] ++ ( drawLayers system (start+1) ( upTo-1) )
-
 drawSmoothFractal :: LSystem->Int->Picture
-drawSmoothFractal (LSystem (Angle theta) (Axiom a) rules) n = line $ smooth 8 ([(0,0)] ++ makePath (iterate' n a rules) theta (0,0) 0) 
+drawSmoothFractal (LSystem (Angle theta) (Axiom a) rules) n = Color (greyN ( ( fromIntegral n )/10)) $  line $ smooth 32 ([(0,0)] ++ makePath (iterate' n a rules) theta (0,0) 0) 
 
 
 drawFractal :: LSystem->Int->Picture
