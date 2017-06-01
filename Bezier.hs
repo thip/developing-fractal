@@ -7,10 +7,13 @@ import Data.List
 type Section = (Point, Point, Point)
 
 smooth :: Integer -> [Point] -> [Point]
-smooth n (a:b:[]) = [a] ++ [b]
-smooth n (a:b:c:[]) = interpolateSection (a, c, b) n
-smooth n (a:b:c:d:[]) = (interpolateSection (a, (half b c), b) n ) ++ (interpolateSection ((half b c), d, c) n )
-smooth n (a:b:c:ps) = (smoothEnd n a b c) ++  (smoothMiddle n middle) ++ (smoothOtherEnd n end)
+smooth n path = [(0,0)] ++ smooth' n path
+
+smooth' :: Integer -> [Point] -> [Point]
+smooth' n (a:b:[]) = interpolateLine a b n
+smooth' n (a:b:c:[]) = interpolateSection (a, c, b) n
+smooth' n (a:b:c:d:[]) = (interpolateSection (a, (half b c), b) n ) ++ (interpolateSection ((half b c), d, c) n )
+smooth' n (a:b:c:ps) = (smoothEnd n a b c) ++  (smoothMiddle n middle) ++ (smoothOtherEnd n end)
     where middle = [b] ++ [c] ++ reverse (  drop 1 ( reverse ps))
           end  = reverse ( take 3 ( reverse ps))
 
@@ -32,10 +35,10 @@ half :: Point -> Point -> Point
 half a b = a + (mulSV 0.5 (b-a)) 
 
 interpolateLine :: Point -> Point -> Integer -> [Point]
-interpolateLine a b n = [ pointAlongLine a b (x/(fromIntegral n)) | x <- [ fromIntegral x' | x' <- [0..n] ] ]
+interpolateLine a b n = [ pointAlongLine a b (x/(fromIntegral n)) | x <- [ fromIntegral x' | x' <- [1..n] ] ]
 
 interpolateSection :: Section -> Integer -> [Point]
-interpolateSection section n = [ point section (x/(fromIntegral n)) | x <- [ fromIntegral x' | x' <- [0..n] ] ]
+interpolateSection section n = [ point section (x/(fromIntegral n)) | x <- [ fromIntegral x' | x' <- [1..n] ] ]
 
 point :: Section -> Float -> Point
 point (start, end, handle) n = pointAlongLine s e n
