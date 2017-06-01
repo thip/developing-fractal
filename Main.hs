@@ -11,7 +11,7 @@ data LSystem = LSystem Angle Axiom [Rule] deriving (Show)
 
 chosenSystem = terDragon
 startIterations = 0
-endIterations =3
+endIterations =2
 
 
 dragon = LSystem (Angle (pi/2)) (Axiom "f") [Rule 'f' "f-h", Rule 'h' "f+h"]
@@ -19,13 +19,13 @@ terDragon = LSystem (Angle (2*pi/3)) (Axiom "f") [Rule 'f' "f+f-f"]
 
 main :: IO()
 main = do
-    mapM_ (print) (map length smoothPaths)
+    mapM_ (print) (map length alignedPaths)
     display  (InWindow "fractal" (300, 300) (100, 100)) (white) (Pictures layers)
-        where layers = (map line smoothPaths) ++ map markPoints smoothPaths
-              smoothPaths = (map (\(n, path) -> (smooth (2^n) path)) (addIndicies (alignedPaths)))
+        where layers = (map line alignedPaths) -- ++ map markPoints smoothPaths
+              --smoothPaths = (map (\(n, path) -> (smooth (2^n) path)) (addIndicies (alignedPaths)))
               alignedPaths = scaleAndRotateCurves chosenSystem paths'
-              paths = map ((scale' 10).(makePath chosenSystem)) [startIterations..endIterations]
-	      paths' = [((smooth 3) ^* (endIterations-n)) ((makePath chosenSystem n)) | n <- [startIterations..endIterations] ]   
+              --paths = map ((scale' 10).(makePath chosenSystem)) [startIterations..endIterations]
+	      paths' = [((smooth 3) ^* ((endIterations-n))) ((makePath chosenSystem (n+2))) | n <- [startIterations..endIterations] ]   
 
 (^*) f n = selfComposeN n f 
 
