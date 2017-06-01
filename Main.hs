@@ -9,50 +9,47 @@ data Axiom = Axiom String deriving (Show)
 data Angle = Angle Float deriving (Show)
 data LSystem = LSystem Angle Axiom [Rule] deriving (Show)
 
-segLength = 10
-iterations = 2
-
 chosenSystem = terDragon
-twist = (angleAsFloat . getTwistAngle) chosenSystem
-    where angleAsFloat (Angle a) = a
+startIterations = 0
+endIterations =8
 
-sf = getScaleFactor chosenSystem
 
 dragon = LSystem (Angle (pi/2)) (Axiom "f") [Rule 'f' "f-h", Rule 'h' "f+h"]
 terDragon = LSystem (Angle (2*pi/3)) (Axiom "f") [Rule 'f' "f+f-f"]
 
 main :: IO()
-main = do 
-    print (getScaleFactor chosenSystem)
-    display (InWindow "fractal" (300, 300) (100, 100)) (white) (Pictures (scaleAndRotateLayers (drawIterations 0 8 chosenSystem)))
+main = do
+    mapM_ (print) (map length smoothPaths)
+    display  (InWindow "fractal" (300, 300) (100, 100)) (white) (Pictures layers)
+        where layers = (map line smoothPaths) --  ++ map markPoints smoothPaths
+              smoothPaths = (map (\(n, path) -> (smooth 32 path)) (addIndicies (alignedPaths)))
+              alignedPaths = scaleAndRotateCurves chosenSystem paths
+              paths = map ((scale' 10).(makePath chosenSystem)) [startIterations..endIterations]
+              
+markPoints :: [Vector] -> Picture
+markPoints points = Pictures (map drawCircle points)
+    where drawCircle (x,y) = translate x y (Circle 0.1)
 
-scaleAndRotateLayers :: [Picture] -> [Picture]
-scaleAndRotateLayers layers = scaleAndRotateLayers' (reverse layers)  0 
+scaleAndRotateCurves :: LSystem->[[Vector]]->[[Vector]]
+scaleAndRotateCurves system curves = map (\(n, curve)->scaleAndRotate (scaleFactor**(fromIntegral n)) (angle*(fromIntegral n)) curve) (addIndicies (reverse curves)) 
+    where angle = -( ( \(Angle a) -> a ) . getTwistAngle) system -- -ve because we've reversed the order of the curves
+          scaleFactor = getScaleFactor system
 
-scaleAndRotateLayers' :: [Picture]->Int->[Picture]
-scaleAndRotateLayers' [] layerNumber = []
-scaleAndRotateLayers' (layer:layers) layerNumber = [(scaleAndRotate (sf**n) (n*a) layer)] ++ (scaleAndRotateLayers' layers (layerNumber+1))
-    where n = fromIntegral layerNumber  
-          a = twist
+addIndicies :: [a]->[(Integer, a)]
+addIndicies xs = zip [0..] xs
 
-scaleAndRotate :: Float->Float->Picture->Picture
-scaleAndRotate scaleFac angle picture = scale scaleFac scaleFac (rotate' angle picture)
+scaleAndRotate :: Float->Float->[Vector]->[Vector]
+scaleAndRotate scaleFactor angle points = ((scale' scaleFactor) . (rotate' angle)) points
 
-drawIterations :: Int->Int->LSystem->[Picture]
-drawIterations start stop  system = map (drawSmoothFractal system) [start..stop] 
+scale' :: Float->[Vector]->[Vector]
+scale' scaleFactor points = map (mulSV scaleFactor) points
 
-rotate' :: Float->Picture->Picture
-rotate' angle picture = rotate (angle * (180/pi)) picture
-
-drawSmoothFractal :: LSystem->Int->Picture
-drawSmoothFractal system n = Color (greyN (0.01+ ( fromIntegral n )/10)) $  line $ smooth 32 ([(0,0)] ++ makePath system n) 
+rotate' :: Float->[Vector]->[Vector]
+rotate' angle points = map (rotateV angle) points
 
 
-drawFractal :: LSystem->Int->Picture
-drawFractal system n = line ([(0,0)] ++ makePath system n)
-
-makePath :: LSystem->Int->Path
-makePath (LSystem (Angle theta) (Axiom a) rules) n  = makePath' (iterate' n a rules) theta (0,0) 0
+makePath :: LSystem->Integer->Path
+makePath (LSystem (Angle theta) (Axiom a) rules) n  = [(0,0)] ++ makePath' (iterate' n a rules) theta (0,0) 0
 
 makePath' :: String->Float->Vector->Float->Path
 makePath' [] theta curPos initialTheta = []
@@ -60,9 +57,9 @@ makePath' (c:cs) theta curPos initialTheta
         | c == '+' = makePath' cs theta curPos (initialTheta + theta)
         | c == '-' = makePath' cs theta curPos (initialTheta - theta)
         | otherwise = [newPos] ++ (makePath' cs theta newPos initialTheta)
-                where newPos =  curPos + (segLength * (sin initialTheta), segLength * (cos initialTheta))
+                where newPos =  curPos + (sin initialTheta, cos initialTheta)
 
-iterate' :: Int->String->[Rule]->String
+iterate' :: Integer->String->[Rule]->String
 iterate' 0 string rules = string
 iterate' n string rules = iterate' (n-1) (replace string rules) rules  
 
@@ -86,7 +83,7 @@ getScaleFactor system = (magV delta1)/(magV delta0)
           path1 = makePath system 1
 
 getTwistAngle :: LSystem->Angle
-getTwistAngle system  = Angle ((argV sum1) - (argV sum0))
+getTwistAngle system  = Angle ((argV sum0) - (argV sum1))
     where sum0 = (last path0) - (head path0)
           sum1 = (last path1) - (head path1)
           path0 = makePath system 0
