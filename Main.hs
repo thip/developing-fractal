@@ -3,6 +3,7 @@ module Main(main) where
 import Text.Printf
 import Graphics.Gloss
 import Graphics.Gloss.Data.Vector
+import Data.List
 import Bezier
 
 data Rule = Rule Char String deriving (Show)
@@ -11,26 +12,24 @@ newtype  Angle = Angle Float deriving (Show)
 data LSystem = LSystem Angle Axiom [Rule] deriving (Show)
 
 chosenSystem = terDragon
-startIterations = 0
-endIterations = 4
-
+startIterations = 1
+endIterations = 8
+smoothness = 2
 
 dragon = LSystem (Angle (pi/2)) (Axiom "f") [Rule 'f' "f-h", Rule 'h' "f+h"]
 terDragon = LSystem (Angle (2*pi/3)) (Axiom "f") [Rule 'f' "f+f-f"]
 
 main :: IO()
-main = -- do
+main = do
 
 --    mapM_ (print) lists
 --    where lists = [map (\a->(a,a)) [0..n] | n <- [1..10]]
-    --mapM_ (print) (map length alignedPaths)
-    --display  (InWindow "fractal" (300, 300) (100, 100)) (white) (Pictures layers)
+--      mapM_ (print) (map length alignedPaths)
+--      display  (InWindow "fractal" (300, 300) (100, 100)) (white) (Pictures layers)
     putStrLn (makeObj ( map (scale' 10) alignedPaths) ++ faces alignedPaths)
         where layers = map line alignedPaths ++ map markPoints alignedPaths
-              --smoothPaths = (map (\(n, path) -> (smooth (2^n) path)) (addIndicies (alignedPaths)))
               alignedPaths = scaleAndRotateCurves chosenSystem paths'
-              --paths = map ((scale' 10).(makePath chosenSystem)) [startIterations..endIterations]
-              paths' = [(smooth 3 ^* (endIterations-n)) (makePath chosenSystem n) | n <- [startIterations..endIterations] ]   
+              paths' = [ selfComposeN (endIterations-n) (smooth 2) (makePath chosenSystem n) | n <- [startIterations..endIterations] ]   
 
 showFloat :: Float->String
 showFloat = printf "%.10f"
@@ -38,7 +37,7 @@ showFloat = printf "%.10f"
 makeObj :: [[Vector]] -> String
 makeObj curves = (concat.concat) $ map 
                                     (\(order, curve) 
-                                        -> (map (makeVectorString . addZ (1.5*3^order)) curve )) 
+                                        -> (map (makeVectorString . addZ (10*2^order)) curve )) 
                                     (zip [0..] curves)
 
 makeVectorString ::  (Float,Float,Float)->String
