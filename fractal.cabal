@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 
 executable fractal
   main-is:             Main.hs
-  -- other-modules:       
+  other-modules:       Bezier
   -- other-extensions:    
   build-depends:       base >=4.8 , gloss
   -- hs-source-dirs:      
