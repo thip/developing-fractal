@@ -13,7 +13,7 @@ data LSystem = LSystem Angle Axiom [Rule] deriving (Show)
 
 chosenSystem = terDragon
 startIterations = 1
-endIterations = 8
+endIterations = 5
 smoothness = 2
 
 dragon = LSystem (Angle (pi/2)) (Axiom "f") [Rule 'f' "f-h", Rule 'h' "f+h"]

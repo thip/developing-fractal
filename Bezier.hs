@@ -20,10 +20,10 @@ interpolateLine :: Point -> Point -> Integer -> [Point]
 interpolateLine a b n = [ pointAlongLine a b (x/fromIntegral n+1) | x <- [ fromIntegral x' | x' <- [1..n] ] ]
 
 interpolateSection :: Section -> Integer -> [Point]
-interpolateSection section n = [ point section (x/(fromIntegral n+1)) | x <- [ fromIntegral x' | x' <- [1..n] ] ]
+interpolateSection section n = [ pointAlongSection section (x/(fromIntegral n+1)) | x <- [ fromIntegral x' | x' <- [1..n] ] ]
 
-point :: Section -> Float -> Point
-point (start, handle, end) n = pointAlongLine s e n
+pointAlongSection :: Section -> Float -> Point
+pointAlongSection (start, handle, end) n = pointAlongLine s e n
         where s = pointAlongLine start handle n
               e = pointAlongLine handle end n 
 
