@@ -8,7 +8,7 @@ import Bezier
 
 data Rule = Rule Char String deriving (Show)
 newtype Axiom = Axiom String deriving (Show)
-newtype  Angle = Angle Float deriving (Show)
+newtype Angle = Angle Float deriving (Show)
 data LSystem = LSystem Angle Axiom [Rule] deriving (Show)
 
 chosenSystem = terDragon
@@ -26,7 +26,7 @@ main = do
 --    where lists = [map (\a->(a,a)) [0..n] | n <- [1..10]]
 --      mapM_ (print) (map length alignedPaths)
 --      display  (InWindow "fractal" (300, 300) (100, 100)) (white) (Pictures layers)
-    putStrLn (makeObj ( map (scale' 10) alignedPaths) ++ faces alignedPaths)
+   putStrLn (makeObj ( map (scale' 10) alignedPaths) ++ faces alignedPaths)
         where layers = map line alignedPaths ++ map markPoints alignedPaths
               alignedPaths = scaleAndRotateCurves chosenSystem paths'
               paths' = [ selfComposeN (endIterations-n) (smooth 2) (makePath chosenSystem n) | n <- [startIterations..endIterations] ]   
