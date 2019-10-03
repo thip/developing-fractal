@@ -54,7 +54,7 @@ faces (c:curves) = concat [ printf "f %d %d %d\nf %d %d %d\n" a b c b d c  | (a,
           height = 1 + length curves 
           width = length c
 
-(^*) f n = selfComposeN n f 
+(^*) f n = selfComposeN n f
 
 selfComposeN :: Integer -> (a->a) -> a -> a
 selfComposeN 0 function arg = function arg
