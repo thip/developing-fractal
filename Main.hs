@@ -67,7 +67,7 @@ markPoints points = Pictures (map drawCircle points)
 scaleAndRotateCurves :: LSystem->[[Vector]]->[[Vector]]
 scaleAndRotateCurves system curves = map (\(n, curve)->scaleAndRotate (scaleFactor**fromIntegral n) (angle*fromIntegral n) curve) (addIndicies (reverse curves)) 
     where angle = -( ( \(Angle a) -> a ) . getTwistAngle) system -- -ve because we've reversed the order of the curves
-          scaleFactor = getScaleFactor system
+        scaleFactor = getScaleFactor system
 
 addIndicies :: [a]->[(Integer, a)]
 addIndicies = zip [1..]
@@ -79,7 +79,7 @@ scale' :: Float->[Vector]->[Vector]
 scale' scaleFactor= map (mulSV scaleFactor)
 
 rotate' :: Float->[Vector]->[Vector]
-rotate' = map .  rotateV
+rotate' = map . rotateV
 
 
 makePath :: LSystem->Integer->Path
