@@ -54,7 +54,7 @@ faces (c:curves) = concat [ printf "f %d %d %d\nf %d %d %d\n" a b c b d c  | (a,
           height = 1 + length curves 
           width = length c
 
-(^*) f n = selfComposeN n f 
+(^*) f n = selfComposeN n f
 
 selfComposeN :: Integer -> (a->a) -> a -> a
 selfComposeN 0 function arg = function arg
@@ -67,7 +67,7 @@ markPoints points = Pictures (map drawCircle points)
 scaleAndRotateCurves :: LSystem->[[Vector]]->[[Vector]]
 scaleAndRotateCurves system curves = map (\(n, curve)->scaleAndRotate (scaleFactor**fromIntegral n) (angle*fromIntegral n) curve) (addIndicies (reverse curves)) 
     where angle = -( ( \(Angle a) -> a ) . getTwistAngle) system -- -ve because we've reversed the order of the curves
-        scaleFactor = getScaleFactor system
+          scaleFactor = getScaleFactor system
 
 addIndicies :: [a]->[(Integer, a)]
 addIndicies = zip [1..]
