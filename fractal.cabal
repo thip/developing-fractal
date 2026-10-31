@@ -22,3 +22,4 @@ executable fractal
   build-depends:       base >=4.8 , gloss
   -- hs-source-dirs:      
   default-language:    Haskell2010
+  ghc-options:         -Wall
