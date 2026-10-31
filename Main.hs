@@ -3,7 +3,7 @@ module Main(main) where
 import Text.Printf
 import Graphics.Gloss
 import Graphics.Gloss.Data.Vector
-import Data.List
+import qualified Graphics.Gloss.Data.Point.Arithmetic as P
 import Bezier
 
 data Rule = Rule Char String deriving (Show)
@@ -91,7 +91,7 @@ makePath' (c:cs) theta curPos initialTheta
         | c == '+' = makePath' cs theta curPos (initialTheta + theta)
         | c == '-' = makePath' cs theta curPos (initialTheta - theta)
         | otherwise = newPos : makePath' cs theta newPos initialTheta
-                where newPos =  curPos + (sin initialTheta, cos initialTheta)
+                where newPos =  curPos P.+ (sin initialTheta, cos initialTheta)
 
 iterate' :: Integer->String->[Rule]->String
 iterate' 0 string rules = string
@@ -118,7 +118,7 @@ getScaleFactor system = magV delta1/magV delta0
 
 getTwistAngle :: LSystem->Angle
 getTwistAngle system  = Angle (argV sum0 - argV sum1)
-    where sum0 = last path0 - head path0
-          sum1 = last path1 - head path1
+    where sum0 = last path0 P.- head path0
+          sum1 = last path1 P.- head path1
           path0 = makePath system 0
           path1 = makePath system 1
