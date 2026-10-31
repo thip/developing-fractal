@@ -1,14 +1,15 @@
-module Bezier (smooth, resample) where
+-- | Operations on paths that don't depend on how the path was made.
+module Curve (smooth, resample) where
 
 import Data.Array (listArray, (!))
-import Graphics.Gloss.Data.Picture (Path, Point)
-import qualified Graphics.Gloss.Data.Point.Arithmetic as P
-import Graphics.Gloss.Data.Vector (mulSV)
+
+import Vector (Path, Vector, scaleVector, (^+^), (^-^))
 
 -- | Start, handle and end of a quadratic Bezier curve.
-type Section = (Point, Point, Point)
+type Section = (Vector, Vector, Vector)
 
--- | Rounds off each corner of a path, keeping its two end points.
+-- | Rounds off each corner of a path, keeping its two end points. Each corner
+-- becomes a curve of @2n - 1@ points.
 smooth :: Int -> Path -> Path
 smooth n [a, b] = a : interpolateLine a b n ++ [b]
 smooth n path@(a : b : _) =
@@ -35,20 +36,20 @@ resample count path
         (segment, offset) = (i * (size - 1)) `divMod` (count - 1)
         fraction = fromIntegral offset / fromIntegral (count - 1)
 
-half :: Point -> Point -> Point
+half :: Vector -> Vector -> Vector
 half a b = pointAlongLine a b 0.5
 
-interpolateLine :: Point -> Point -> Int -> [Point]
+interpolateLine :: Vector -> Vector -> Int -> Path
 interpolateLine a b n = [pointAlongLine a b (fromIntegral x / (fromIntegral n + 1)) | x <- [1 .. n]]
 
-interpolateSection :: Section -> Int -> [Point]
+interpolateSection :: Section -> Int -> Path
 interpolateSection section n = [pointAlongSection section (fromIntegral x / (fromIntegral n + 1)) | x <- [1 .. n]]
 
-pointAlongSection :: Section -> Float -> Point
+pointAlongSection :: Section -> Float -> Vector
 pointAlongSection (start, handle, end) d = pointAlongLine s e d
   where
     s = pointAlongLine start handle d
     e = pointAlongLine handle end d
 
-pointAlongLine :: Point -> Point -> Float -> Point
-pointAlongLine a b d = a P.+ mulSV d (b P.- a)
+pointAlongLine :: Vector -> Vector -> Float -> Vector
+pointAlongLine a b d = a ^+^ scaleVector d (b ^-^ a)
