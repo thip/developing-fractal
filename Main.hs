@@ -6,7 +6,7 @@ import qualified Graphics.Gloss.Data.Point.Arithmetic as P
 import Graphics.Gloss.Data.Vector (Vector, argV, magV, mulSV, rotateV)
 import Text.Printf (printf)
 
-import Bezier (smooth)
+import Bezier (resample, smooth)
 
 type Rule = (Char, String)
 
@@ -33,11 +33,15 @@ baseLayerHeight = 10
 main :: IO ()
 main = putStrLn (objVertices (map (scalePath meshScale) alignedPaths) ++ objFaces alignedPaths)
   where
-    alignedPaths = alignCurves chosenSystem smoothedPaths
+    alignedPaths = alignCurves chosenSystem (matchPointCounts smoothedPaths)
     smoothedPaths = map smoothedPath [startIterations .. endIterations]
-    -- Each pass brings a layer up to the point count of the next iteration, so
-    -- every layer ends up matching iteration (endIterations + 1).
+    -- Coarser iterations get more passes, so that all layers are similarly
+    -- detailed before their point counts are matched.
     smoothedPath n = iterate (smooth smoothness) (makePath chosenSystem n) !! (endIterations + 1 - n)
+
+-- | Gives every path the point count of the longest one, as objFaces needs.
+matchPointCounts :: [Path] -> [Path]
+matchPointCounts paths = map (resample (maximum (map length paths))) paths
 
 -- OBJ output
 
