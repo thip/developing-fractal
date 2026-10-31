@@ -2,6 +2,7 @@ module Bezier (smooth) where
 
 import Graphics.Gloss
 import Graphics.Gloss.Data.Vector
+import qualified Graphics.Gloss.Data.Point.Arithmetic as P
 import Data.List
 
 type Section = (Point, Point, Point)
@@ -14,7 +15,7 @@ smooth' n [a,b] = [half a b] ++ [b]
 smooth' n (a:b:c:ps) = interpolateSection (half a b, b, half b c) (2*n-1) ++ smooth' n (b:c:ps)
 
 half :: Point -> Point -> Point
-half a b = a + mulSV 0.5 (b-a) 
+half a b = a P.+ mulSV 0.5 (b P.- a)
 
 interpolateLine :: Point -> Point -> Integer -> [Point]
 interpolateLine a b n = [ pointAlongLine a b (x/fromIntegral n+1) | x <- [ fromIntegral x' | x' <- [1..n] ] ]
@@ -28,5 +29,5 @@ pointAlongSection (start, handle, end) n = pointAlongLine s e n
               e = pointAlongLine handle end n 
 
 pointAlongLine :: Point -> Point -> Float -> Point
-pointAlongLine a b d = a + mulSV  d  (b-a)
+pointAlongLine a b d = a P.+ mulSV d (b P.- a)
 
